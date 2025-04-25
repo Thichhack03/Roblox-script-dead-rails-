@@ -43,11 +43,40 @@ ESPBtn.Position = UDim2.new(0, 5, 0, 60)
 ESPBtn.Size = UDim2.new(1, -10, 0, 20)
 ESPBtn.Text = "ESP: OFF"
 
--- Nút TP đến cuối
-local TPBtn = Instance.new("TextButton", Frame)
-TPBtn.Position = UDim2.new(0, 5, 0, 85)
-TPBtn.Size = UDim2.new(1, -10, 0, 20)
-TPBtn.Text = "TP Cuối"
+frame.Size = UDim2.new(0, 100, 0, 130)
+local flyBtn = Instance.new("TextButton", frame)
+flyBtn.Position = UDim2.new(0, 5, 0, 110)
+flyBtn.Size = UDim2.new(1, -10, 0, 20)
+flyBtn.Text = "Fly: OFF"
+local flying = false
+local flyVelocity = nil
+
+flyBtn.MouseButton1Click:Connect(function()
+    flying = not flying
+    flyBtn.Text = "Fly: " .. (flying and "ON" or "OFF")
+
+    local char = player.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+
+    if flying then
+        flyVelocity = Instance.new("BodyVelocity")
+        flyVelocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+        flyVelocity.Velocity = Vector3.zero
+        flyVelocity.Parent = char.HumanoidRootPart
+
+        RunService.RenderStepped:Connect(function()
+            if flying and flyVelocity and player.Character then
+                local camDir = workspace.CurrentCamera.CFrame.LookVector
+                flyVelocity.Velocity = camDir * 50 -- Tốc độ bay
+            end
+        end)
+    else
+        if flyVelocity then
+            flyVelocity:Destroy()
+            flyVelocity = nil
+        end
+    end
+end)
 
 -- Noclip Toggle
 RunService.Stepped:Connect(function()
