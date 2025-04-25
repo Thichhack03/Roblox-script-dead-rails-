@@ -89,3 +89,43 @@ game.Players.PlayerAdded:Connect(function(plr)
         createESP(torso, color)
     end)
 end)
+
+-- Auto aim --
+local aimBtn = Instance.new("TextButton", menu)
+aimBtn.Size = UDim2.new(1, 0, 0, 15)
+aimBtn.Position = UDim2.new(0, 0, 1, 45)
+aimBtn.Text = "Auto Aim: OFF"
+aimBtn.TextScaled = true
+aimBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+local aimOn = false
+
+aimBtn.MouseButton1Click:Connect(function()
+    aimOn = not aimOn
+    aimBtn.Text = "Auto Aim: " .. (aimOn and "ON" or "OFF")
+end)
+
+local function getClosestEnemy()
+    local closest, shortest = nil, math.huge
+    for _, plr in pairs(game.Players:GetPlayers()) do
+        if plr ~= player and plr.Team ~= player.Team and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            local dist = (plr.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
+            if dist < shortest and dist < 100 then
+                shortest = dist
+                closest = plr.Character.HumanoidRootPart
+            end
+        end
+    end
+    return closest
+end
+
+task.spawn(function()
+    while true do
+        task.wait()
+        if aimOn then
+            local target = getClosestEnemy()
+            if target then
+                workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, target.Position)
+            end
+        end
+    end
+end)
