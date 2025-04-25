@@ -43,6 +43,7 @@ ESPBtn.Position = UDim2.new(0, 5, 0, 60)
 ESPBtn.Size = UDim2.new(1, -10, 0, 20)
 ESPBtn.Text = "ESP: OFF"
 
+-- Fly --
 frame.Size = UDim2.new(0, 100, 0, 130)
 local flyBtn = Instance.new("TextButton", frame)
 flyBtn.Position = UDim2.new(0, 5, 0, 110)
@@ -136,14 +137,5 @@ RunService.RenderStepped:Connect(function()
             end
             if color then highlightTarget(model, color) end
         end
-    end
-end)
-
--- Teleport cuối map (thay đổi vị trí nếu cần)
-TPBtn.MouseButton1Click:Connect(function()
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if root then
-        -- Vị trí cuối tùy map, đây chỉ là ví dụ
-        root.CFrame = CFrame.new(9999, 100, 0)
     end
 end)
