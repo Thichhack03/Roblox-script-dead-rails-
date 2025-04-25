@@ -1,97 +1,120 @@
-local player = game.Players.LocalPlayer
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.ResetOnSpawn = false
+--// UI + Hack cho Dead Rails by Thichhack03
 
-local menu = Instance.new("Frame", gui)
-menu.Size = UDim2.new(0, 30, 0, 30)
-menu.Position = UDim2.new(0, 100, 0, 100)
-menu.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-menu.BorderSizePixel = 1
-menu.Active = true
-menu.Draggable = true
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local noclip = false
+local espOn = false
 
-local swastika = Instance.new("TextLabel", menu)
-swastika.Size = UDim2.new(1, 0, 1, 0)
-swastika.Text = "🇻🇳"
-swastika.TextScaled = true
-swastika.TextColor3 = Color3.fromRGB(255, 255, 255)
-swastika.BackgroundTransparency = 1
-
--- God mode --
-local godBtn = Instance.new("TextButton", menu)
-godBtn.Size = UDim2.new(1, 0, 0, 15)
-godBtn.Position = UDim2.new(0, 0, 1, 25)
-godBtn.Text = "BT: OFF"
-godBtn.TextScaled = true
-godBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-local godOn = false
-
-godBtn.MouseButton1Click:Connect(function()
-    godOn = not godOn
-    godBtn.Text = "BT: " .. (godOn and "ON" or "OFF")
-end)
-
-task.spawn(function()
-    while true do
-        task.wait(0.2)
-        if godOn then
-            local h = player.Character and player.Character:FindFirstChild("Humanoid")
-            if h then h.Health = h.MaxHealth end
-        end
-    end
-end)
-
--- ESP --
-local function createESP(target, color)
-    local box = Instance.new("BoxHandleAdornment")
-    box.Adornee = target
-    box.AlwaysOnTop = true
-    box.ZIndex = 10
-    box.Size = target.Size + Vector3.new(0.1, 0.1, 0.1)
-    box.Color3 = color
-    box.Transparency = 0.5
-    box.Parent = target
+-- Xoá UI cũ nếu có
+if CoreGui:FindFirstChild("VNMenu") then
+    CoreGui:FindFirstChild("VNMenu"):Destroy()
 end
 
-for _, plr in pairs(game.Players:GetPlayers()) do
-    if plr ~= player and plr.Character then
-        local torso = plr.Character:FindFirstChild("HumanoidRootPart")
-        if torso then
-            local color = (plr.Team ~= player.Team) and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(0, 170, 255)
-            createESP(torso, color)
-        end
-    end
-end
+-- UI setup
+local ScreenGui = Instance.new("ScreenGui", CoreGui)
+ScreenGui.Name = "VNMenu"
 
-game.Players.PlayerAdded:Connect(function(plr)
-    plr.CharacterAdded:Connect(function(char)
-        task.wait(1)
-        local torso = char:WaitForChild("HumanoidRootPart")
-        local color = (plr.Team ~= player.Team) and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(0, 170, 255)
-        createESP(torso, color)
-    end)
-end)
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 100, 0, 100) -- hình vuông 3mm ~ 100x100px
+Frame.Position = UDim2.new(0, 20, 0, 100)
+Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Frame.BorderSizePixel = 0
 
--- Noclip --
-local noclipBtn = Instance.new("TextButton", menu)
-noclipBtn.Size = UDim2.new(1, 0, 0, 15)
-noclipBtn.Position = UDim2.new(0, 0, 1, 60)
-noclipBtn.Text = "Noclip: OFF"
-noclipBtn.TextScaled = true
-noclipBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-local noclipOn = false
+-- Cờ VN
+local Flag = Instance.new("TextLabel", Frame)
+Flag.Size = UDim2.new(1, 0, 0, 30)
+Flag.Text = "🇻🇳"
+Flag.TextScaled = true
+Flag.BackgroundTransparency = 1
+Flag.TextColor3 = Color3.new(1,1,1)
 
-noclipBtn.MouseButton1Click:Connect(function()
-    noclipOn = not noclipOn
-    noclipBtn.Text = "Noclip: " .. (noclipOn and "ON" or "OFF")
-end)
+-- Nút Noclip
+local NoclipBtn = Instance.new("TextButton", Frame)
+NoclipBtn.Position = UDim2.new(0, 5, 0, 35)
+NoclipBtn.Size = UDim2.new(1, -10, 0, 20)
+NoclipBtn.Text = "Noclip: OFF"
 
-game:GetService("RunService").Stepped:Connect(function()
-    if noclipOn and player.Character then
-        for _, part in pairs(player.Character:GetDescendants()) do
-            if part:IsA("BasePart") and part.CanCollide == true then
+-- Nút ESP
+local ESPBtn = Instance.new("TextButton", Frame)
+ESPBtn.Position = UDim2.new(0, 5, 0, 60)
+ESPBtn.Size = UDim2.new(1, -10, 0, 20)
+ESPBtn.Text = "ESP: OFF"
+
+-- Nút TP đến cuối
+local TPBtn = Instance.new("TextButton", Frame)
+TPBtn.Position = UDim2.new(0, 5, 0, 85)
+TPBtn.Size = UDim2.new(1, -10, 0, 20)
+TPBtn.Text = "TP Cuối"
+
+-- Noclip Toggle
+RunService.Stepped:Connect(function()
+    if noclip and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
                 part.CanCollide = false
             end
         end
+    end
+end)
+
+NoclipBtn.MouseButton1Click:Connect(function()
+    noclip = not noclip
+    NoclipBtn.Text = "Noclip: " .. (noclip and "ON" or "OFF")
+end)
+
+-- ESP Function
+local function highlightTarget(target, color)
+    if target:FindFirstChild("Highlight") then return end
+    local hl = Instance.new("Highlight", target)
+    hl.FillColor = color
+    hl.OutlineColor = Color3.new(1,1,1)
+    hl.FillTransparency = 0.2
+end
+
+local function removeHighlights()
+    for _, plr in pairs(game:GetService("Workspace"):GetDescendants()) do
+        if plr:IsA("Model") and plr:FindFirstChild("Highlight") then
+            plr.Highlight:Destroy()
+        end
+    end
+end
+
+ESPBtn.MouseButton1Click:Connect(function()
+    espOn = not espOn
+    ESPBtn.Text = "ESP: " .. (espOn and "ON" or "OFF")
+    if not espOn then
+        removeHighlights()
+    end
+end)
+-- ESP loop
+RunService.RenderStepped:Connect(function()
+    if not espOn then return end
+
+    for _, model in pairs(workspace:GetDescendants()) do
+        if model:IsA("Model") and model:FindFirstChild("Humanoid") then
+            local name = model.Name:lower()
+            local color = nil
+            if name:find("zombie") then color = Color3.fromRGB(0,255,0)
+            elseif name:find("ma sói") or name:find("werewolf") then color = Color3.fromRGB(255, 0, 127)
+            elseif name:find("ma cà rồng") or name:find("vampire") then color = Color3.fromRGB(128,0,255)
+            elseif name:find("cướp") or name:find("robber") then color = Color3.fromRGB(255, 255, 0)
+            elseif name:find("sói") then color = Color3.fromRGB(255, 0, 0)
+            elseif Players:FindFirstChild(model.Name) and model ~= LocalPlayer.Character then
+                color = Color3.fromRGB(0, 170, 255)
+            end
+            if color then highlightTarget(model, color) end
+        end
+    end
+end)
+
+-- Teleport cuối map (thay đổi vị trí nếu cần)
+TPBtn.MouseButton1Click:Connect(function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if root then
+        -- Vị trí cuối tùy map, đây chỉ là ví dụ
+        root.CFrame = CFrame.new(9999, 100, 0)
     end
 end)
