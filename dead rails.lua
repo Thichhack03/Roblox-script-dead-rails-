@@ -12,28 +12,10 @@ menu.Draggable = true
 
 local swastika = Instance.new("TextLabel", menu)
 swastika.Size = UDim2.new(1, 0, 1, 0)
-swastika.Text = "+"
+swastika.Text = "🇻🇳"
 swastika.TextScaled = true
 swastika.TextColor3 = Color3.fromRGB(255, 255, 255)
 swastika.BackgroundTransparency = 1
-
--- Speed hack --
-local speedBtn = Instance.new("TextButton", menu)
-speedBtn.Size = UDim2.new(1, 0, 0, 15)
-speedBtn.Position = UDim2.new(0, 0, 1, 5)
-speedBtn.Text = "Speed: OFF"
-speedBtn.TextScaled = true
-speedBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-local speedOn = false
-
-speedBtn.MouseButton1Click:Connect(function()
-    speedOn = not speedOn
-    speedBtn.Text = "Speed: " .. (speedOn and "ON" or "OFF")
-    local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        humanoid.WalkSpeed = speedOn and 48 or 16
-    end
-end)
 
 -- God mode --
 local godBtn = Instance.new("TextButton", menu)
@@ -125,6 +107,30 @@ task.spawn(function()
             local target = getClosestEnemy()
             if target then
                 workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, target.Position)
+            end
+        end
+    end
+end)
+
+-- Noclip --
+local noclipBtn = Instance.new("TextButton", menu)
+noclipBtn.Size = UDim2.new(1, 0, 0, 15)
+noclipBtn.Position = UDim2.new(0, 0, 1, 60)
+noclipBtn.Text = "Noclip: OFF"
+noclipBtn.TextScaled = true
+noclipBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+local noclipOn = false
+
+noclipBtn.MouseButton1Click:Connect(function()
+    noclipOn = not noclipOn
+    noclipBtn.Text = "Noclip: " .. (noclipOn and "ON" or "OFF")
+end)
+
+game:GetService("RunService").Stepped:Connect(function()
+    if noclipOn and player.Character then
+        for _, part in pairs(player.Character:GetDescendants()) do
+            if part:IsA("BasePart") and part.CanCollide == true then
+                part.CanCollide = false
             end
         end
     end
